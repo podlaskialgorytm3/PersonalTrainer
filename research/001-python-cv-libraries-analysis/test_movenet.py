@@ -68,6 +68,7 @@ MOVENET_MODELS = {
     },
     "thunder": {
         "urls": [
+            "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder-tflite-float16/4/download",
             "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder/4/download",
             "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder-tflite-float16/1/download",
             "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder/1/download",

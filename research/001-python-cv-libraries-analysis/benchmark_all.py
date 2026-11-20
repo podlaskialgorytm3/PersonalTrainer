@@ -1,12 +1,13 @@
 """
 Unified benchmark runner for all 4 Python Pose Estimation libraries (Task #1: Python CV libraries analysis).
 
-Runs each candidate library in headless mode (--no-display, --speed 1.0 so all frames are evaluated)
-on the same reference workout video and prints a Markdown comparison table ready for the ADR.
+Runs each candidate library in headless mode (--no-display, --speed 1.0, --max-frames 150)
+on the bench-press videos (/bench-press/bench-press-01 .. 04) and appends only the missing
+tables to benchmark_results.md without overwriting existing results.
 
 Usage:
     python research/001-python-cv-libraries-analysis/benchmark_all.py
-    python research/001-python-cv-libraries-analysis/benchmark_all.py --video /bench-press/bench-press-01
+    python research/001-python-cv-libraries-analysis/benchmark_all.py --videos /bench-press/bench-press-02 /bench-press/bench-press-03
 """
 
 import argparse
@@ -18,6 +19,13 @@ import sys
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
+
+DEFAULT_VIDEOS = [
+    "/bench-press/bench-press-01",
+    "/bench-press/bench-press-02",
+    "/bench-press/bench-press-03",
+    "/bench-press/bench-press-04",
+]
 
 BENCHMARKS = [
     {
@@ -76,26 +84,12 @@ def parse_metric(pattern: str, text: str, default: str = "N/A") -> str:
     return match.group(1).strip() if match else default
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Run all CV pose estimation benchmarks on a reference video.")
-    parser.add_argument(
-        "--video",
-        type=str,
-        default="/bench-press/bench-press-01",
-        help="Reference video inside data/ folder (default: /bench-press/bench-press-01).",
-    )
-    parser.add_argument(
-        "--max-frames",
-        type=int,
-        default=150,
-        help="Max frames to evaluate per model so slow CPU models finish quickly (default: 150 frames, 0 = all).",
-    )
-    args = parser.parse_args()
-
+def run_benchmark_for_video(video_path: str, max_frames: int) -> str:
+    """Runs all 8 model benchmarks on a single video and returns its Markdown table section."""
     results_table: list[dict[str, str]] = []
 
-    print("=" * 75)
-    print(f"RUNNING POSE ESTIMATION BENCHMARK SUITE ON: {args.video}")
+    print("\n" + "=" * 75)
+    print(f"RUNNING POSE ESTIMATION BENCHMARK SUITE ON: {video_path}")
     print("=" * 75)
 
     for item in BENCHMARKS:
@@ -104,16 +98,16 @@ def main() -> None:
             sys.executable,
             str(script_path),
             "--video",
-            args.video,
+            video_path,
             "--speed",
             "1.0",
             "--max-frames",
-            str(args.max_frames),
+            str(max_frames),
             "--no-display",
             *item["extra_args"],
         ]
 
-        print(f"\n>>> Benchmarking: {item['name']} ...")
+        print(f"\n>>> [{video_path}] Benchmarking: {item['name']} ...")
         proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
         output = proc.stdout + "\n" + proc.stderr
 
@@ -151,9 +145,8 @@ def main() -> None:
             }
         )
 
-    # Generate Markdown report table
     md_lines = [
-        f"### Quantitative Benchmark Results (`{args.video}`)",
+        f"### Quantitative Benchmark Results (`{video_path}`)",
         "",
         "| Model / Library | Keypoints (2D/3D) | Detection Rate | Avg Latency (ms) | P95 Latency (ms) | Avg FPS |",
         "| :--- | :--- | :---: | :---: | :---: | :---: |",
@@ -163,15 +156,54 @@ def main() -> None:
             f"| **{row['name']}** | {row['keypoints']} | {row['detected']} | {row['avg_ms']} | {row['p95_ms']} | **{row['fps']}** |"
         )
 
-    markdown_output = "\n".join(md_lines)
+    return "\n".join(md_lines)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run CV pose estimation benchmarks across bench-press videos.")
+    parser.add_argument(
+        "--videos",
+        nargs="+",
+        default=DEFAULT_VIDEOS,
+        help="List of videos inside data/ folder (default: bench-press-01 through 04).",
+    )
+    parser.add_argument(
+        "--max-frames",
+        type=int,
+        default=150,
+        help="Max frames to evaluate per model so slow CPU models finish quickly (default: 150 frames, 0 = all).",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-run even if the video's table is already present in benchmark_results.md.",
+    )
+    args = parser.parse_args()
+
     report_path = SCRIPT_DIR / "benchmark_results.md"
-    report_path.write_text(markdown_output + "\n", encoding="utf-8")
+    existing_content = report_path.read_text(encoding="utf-8") if report_path.exists() else ""
+
+    for video in args.videos:
+        section_header = f"### Quantitative Benchmark Results (`{video}`)"
+        if section_header in existing_content and not args.force:
+            print(f"[SKIP] Table for '{video}' already exists in {report_path.name}. Skipping to avoid overwriting.")
+            continue
+
+        table_md = run_benchmark_for_video(video, args.max_frames)
+
+        # Append immediately to benchmark_results.md so progress is never lost
+        with open(report_path, "a", encoding="utf-8") as f:
+            if existing_content and not existing_content.endswith("\n\n"):
+                f.write("\n")
+            f.write(table_md + "\n\n")
+
+        existing_content = report_path.read_text(encoding="utf-8")
+        print(f"\n[SAVED] Appended benchmark table for '{video}' to {report_path}")
 
     print("\n" + "=" * 75)
-    print("MARKDOWN TABLE (also saved to research/001-python-cv-libraries-analysis/benchmark_results.md):")
+    print(f"ALL BENCHMARKS COMPLETE! Full contents of {report_path.name}:")
     print("=" * 75 + "\n")
-    print(markdown_output)
-    print("\n" + "=" * 75)
+    print(report_path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
