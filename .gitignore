@@ -1,2 +1,52 @@
+# Virtual environments
 .venv/
+venv/
+env/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Datasets & local workout videos
 data/
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Downloaded CV / ML model weights (auto-downloaded by scripts)
+**/models/
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.task
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Downloaded CV / ML model weights (auto-downloaded by scripts)
+**/models/
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.task
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
