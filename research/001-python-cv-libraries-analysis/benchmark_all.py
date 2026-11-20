@@ -84,6 +84,12 @@ def main() -> None:
         default="/bench-press/bench-press-01",
         help="Reference video inside data/ folder (default: /bench-press/bench-press-01).",
     )
+    parser.add_argument(
+        "--max-frames",
+        type=int,
+        default=150,
+        help="Max frames to evaluate per model so slow CPU models finish quickly (default: 150 frames, 0 = all).",
+    )
     args = parser.parse_args()
 
     results_table: list[dict[str, str]] = []
@@ -101,6 +107,8 @@ def main() -> None:
             args.video,
             "--speed",
             "1.0",
+            "--max-frames",
+            str(args.max_frames),
             "--no-display",
             *item["extra_args"],
         ]

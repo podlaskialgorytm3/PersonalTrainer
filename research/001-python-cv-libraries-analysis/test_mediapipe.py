@@ -131,6 +131,12 @@ def main() -> None:
         help="Video playback speed multiplier (default: 1.5x).",
     )
     parser.add_argument(
+        "--max-frames",
+        type=int,
+        default=0,
+        help="Optional maximum number of processed frames (0 = entire video).",
+    )
+    parser.add_argument(
         "--no-display",
         action="store_true",
         help="Run headless without opening an OpenCV window (useful for pure FPS benchmarking).",
@@ -196,6 +202,9 @@ def main() -> None:
                     continue
 
             total_frames += 1
+            if args.max_frames > 0 and total_frames > args.max_frames:
+                total_frames -= 1
+                break
             h, w, _ = frame.shape
 
             # Monotonically increasing timestamp in ms required by RunningMode.VIDEO

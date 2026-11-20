@@ -68,8 +68,9 @@ MOVENET_MODELS = {
     },
     "thunder": {
         "urls": [
+            "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder/4/download",
             "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder-tflite-float16/1/download",
-            "https://raw.githubusercontent.com/arunponnusamy/movenet-tensorflow/main/movenet_thunder_fp16.tflite",
+            "https://www.kaggle.com/api/v1/models/google/movenet/tfLite/singlepose-thunder/1/download",
         ],
         "input_size": 256,
         "filename": "movenet_singlepose_thunder_f16.tflite",
@@ -265,6 +266,12 @@ def main() -> None:
         help="Video playback speed multiplier (default: 1.5x).",
     )
     parser.add_argument(
+        "--max-frames",
+        type=int,
+        default=0,
+        help="Optional maximum number of processed frames (0 = entire video).",
+    )
+    parser.add_argument(
         "--no-display",
         action="store_true",
         help="Run headless without opening an OpenCV window (useful for pure FPS benchmarking).",
@@ -323,6 +330,9 @@ def main() -> None:
                 continue
 
         total_frames += 1
+        if args.max_frames > 0 and total_frames > args.max_frames:
+            total_frames -= 1
+            break
 
         input_tensor, scale, pad_top, pad_left = preprocess_with_padding(frame, input_size)
         if input_dtype != np.uint8:
