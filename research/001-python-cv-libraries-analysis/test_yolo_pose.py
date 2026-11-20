@@ -114,6 +114,12 @@ def main() -> None:
         help="Minimum confidence threshold for detection (default: 0.5).",
     )
     parser.add_argument(
+        "--speed",
+        type=float,
+        default=1.5,
+        help="Video playback speed multiplier (default: 1.5x).",
+    )
+    parser.add_argument(
         "--no-display",
         action="store_true",
         help="Run headless without opening an OpenCV window (useful for pure FPS benchmarking).",
@@ -150,14 +156,25 @@ def main() -> None:
     detected_frames = 0
     total_frames = 0
 
-    print(f"[INFO] Source : {source_label}")
+    print(f"[INFO] Source : {source_label} (playback speed: {args.speed}x)")
     print(f"[INFO] Model  : {model_name} (ultralytics={ultralytics.__version__})")
     print("[INFO] Press 'q' in the video window to stop and see benchmark summary.")
 
+    video_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    target_frame_time_s = (1.0 / (video_fps * args.speed)) if args.video and args.speed > 0 else 0.0
+    raw_frame_idx = 0
+
     while cap.isOpened():
+        loop_start = time.perf_counter()
         ret, frame = cap.read()
         if not ret:
             break
+        raw_frame_idx += 1
+
+        # For video files at >1.0x speed, skip intermediate frames proportionally so playback is genuinely faster
+        if args.video and args.speed > 1.0:
+            if int(raw_frame_idx / args.speed) == int((raw_frame_idx - 1) / args.speed):
+                continue
 
         total_frames += 1
 
@@ -237,7 +254,7 @@ def main() -> None:
         if not args.no_display:
             cv2.putText(
                 annotated_frame,
-                f"YOLO-Pose ({model_name}) | Inference: {inference_ms:.1f} ms ({current_fps:.1f} FPS)",
+                f"YOLO-Pose ({model_name}) [{args.speed}x] | Inference: {inference_ms:.1f} ms ({current_fps:.1f} FPS)",
                 (15, 30),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.65,
@@ -246,7 +263,9 @@ def main() -> None:
             )
             cv2.imshow("Ultralytics YOLO-Pose - Biomechanical Analysis Test", annotated_frame)
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            elapsed_s = time.perf_counter() - loop_start
+            wait_ms = max(1, int((target_frame_time_s - elapsed_s) * 1000)) if target_frame_time_s > 0 else 1
+            if cv2.waitKey(wait_ms) & 0xFF == ord("q"):
                 break
 
     cap.release()
