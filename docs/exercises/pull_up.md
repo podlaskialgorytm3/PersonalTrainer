@@ -28,10 +28,10 @@ From a ~25–30° rear-diagonal view, the system evaluates four key signals simu
 
 ### Pose Tracking Examples
 
-![Bottom / Mid-Pull Position – Extension & Alignment](man_pull_up_mid_range.png)
+![Bottom / Mid-Pull Position – Extension & Alignment](./img/man_pull_up_mid_range.png)
 *Lower phase: verifying bilateral elbow extension, shoulder symmetry, and vertical hip/leg alignment.*
 
-![Top Position – Clearing the Bar](man_pull_up_full.png)
+![Top Position – Clearing the Bar](./img/man_pull_up_full.png)
 *Top phase: head/ears crossing the horizontal wrist reference line (chin-over-bar trigger) with controlled leg position.*
 
 ## What to Pay Attention To
@@ -45,4 +45,5 @@ From a ~25–30° rear-diagonal view, the system evaluates four key signals simu
 
 ## Reference Videos
 
-* **Video 1 – Ideal Camera Angle & Form Reference (K boges):** [Watch Video 1](https://www.youtube.com/watch?v=zuf5qRaFr-8)
+* **Video 1 – Ideal Camera Angle & Form Reference (K boges):** (https://www.youtube.com/watch?v=zuf5qRaFr-8)
+* **Video 2 – Front view lets test which better suit the model (K boges):** (https://www.youtube.com/watch?v=2SkV-3ckG0s)

@@ -23,10 +23,10 @@ Once you upload or stream your video, the model tracks key joints on the side of
 
 ### Pose Tracking Examples
 
-![Top Position – Full Lockout](woman_diamond_push_up.png)
+![Top Position – Full Lockout](./img/woman_diamond_push_up.png)
 *Top position: arms locked out (~165–175° elbow angle) with a straight body line from ear to ankle.*
 
-![Bottom Position – Full Depth](man_push_up.png)
+![Bottom Position – Full Depth](./img/man_push_up.png)
 *Bottom position: elbow angle drops to ≤ 90° while maintaining neutral hip alignment.*
 
 ## What to Pay Attention To
